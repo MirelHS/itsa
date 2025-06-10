@@ -125,6 +125,7 @@
     const popupModal = document.getElementById('popup-modal');
     const closePopup = document.getElementById('close-popup');
     let isDrawing = false;
+    let totalPixels = 0;
     let scratchedPixels = 0;
     let confettiShown = false;
 
@@ -134,9 +135,8 @@
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#f4c542';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Recalculate based on the resized canvas
-      totalPixels = canvas.width * canvas.height;
+
+      totalPixels = canvas.width * canvas.height * 0.7; // 70% of the total pixel count.
     }
 
     function getCoords(e) {
@@ -159,14 +159,14 @@
       ctx.arc(x, y, 30, 0, Math.PI * 2);
       ctx.fill();
 
-      const imgData = ctx.getImageData(x - 30, y - 30, 60, 60);
-      let scratchedArea = 0;
+      // Calculate scratched pixels
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      scratchedPixels = 0;
       for (let i = 0; i < imgData.data.length; i += 4) {
-        if (imgData.data[i + 3] === 0) scratchedArea++;
+        if (imgData.data[i + 3] === 0) scratchedPixels++;
       }
-      scratchedPixels += scratchedArea;
 
-      if ((scratchedPixels / totalPixels) > 0.7 && !confettiShown) { // Adjusted to 70%
+      if (scratchedPixels >= totalPixels && !confettiShown) {
         confettiShown = true;
         triggerConfetti();
         showModal();
@@ -211,9 +211,6 @@
     window.addEventListener('load', resizeCanvas);
     img.onload = resizeCanvas;
     window.addEventListener('resize', resizeCanvas);
-    
-    // Initialize the total pixels variable
-    let totalPixels = canvas.width * canvas.height;
   </script>
 </body>
 </html>
