@@ -126,7 +126,6 @@
     const closePopup = document.getElementById('close-popup');
     let isDrawing = false;
     let scratchedPixels = 0;
-    const totalPixels = 752 * 790;
     let confettiShown = false;
 
     function resizeCanvas() {
@@ -135,6 +134,9 @@
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#f4c542';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Recalculate based on the resized canvas
+      totalPixels = canvas.width * canvas.height;
     }
 
     function getCoords(e) {
@@ -158,11 +160,13 @@
       ctx.fill();
 
       const imgData = ctx.getImageData(x - 30, y - 30, 60, 60);
+      let scratchedArea = 0;
       for (let i = 0; i < imgData.data.length; i += 4) {
-        if (imgData.data[i + 3] === 0) scratchedPixels++;
+        if (imgData.data[i + 3] === 0) scratchedArea++;
       }
+      scratchedPixels += scratchedArea;
 
-      if ((scratchedPixels / totalPixels) > 0.9 && !confettiShown) {
+      if ((scratchedPixels / totalPixels) > 0.5 && !confettiShown) { // Adjusted to 50%
         confettiShown = true;
         triggerConfetti();
         showModal();
@@ -207,6 +211,9 @@
     window.addEventListener('load', resizeCanvas);
     img.onload = resizeCanvas;
     window.addEventListener('resize', resizeCanvas);
+    
+    // Initialize the total pixels variable
+    let totalPixels = canvas.width * canvas.height;
   </script>
 </body>
 </html>
