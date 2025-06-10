@@ -11,13 +11,17 @@
       padding: 20px;
       margin: 0;
       overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     #scratch-container {
       position: relative;
       width: 100%;
       max-width: 752px;
-      height: auto;
       margin: 0 auto;
     }
 
@@ -47,7 +51,7 @@
       position: absolute;
       width: 10px;
       height: 10px;
-      background-color: #007bff; /* Blue confetti */
+      background-color: #007bff;
       border-radius: 50%;
       pointer-events: none;
       opacity: 0;
@@ -61,8 +65,8 @@
     }
 
     #reveal-message {
-      display: none; /* Initially hide the message */
-      font-size: 24px; /* Adjust size as needed */
+      display: none;
+      font-size: 24px;
       margin-top: 20px;
     }
   </style>
@@ -75,7 +79,7 @@
     <canvas id="scratch-canvas"></canvas>
   </div>
 
-  <div id="reveal-message">Felicitări! Ai descoperit surpriza!</div> <!-- Added message element -->
+  <div id="reveal-message">It's a boy!</div>
 
   <script>
     const canvas = document.getElementById('scratch-canvas');
@@ -84,19 +88,17 @@
     const revealMessage = document.getElementById('reveal-message');
     let isDrawing = false;
     let scratchedPixels = 0;
-    const totalPixels = 752 * 790; // Canvas size
+    const totalPixels = 752 * 790;
     let confettiShown = false;
 
-    // Resize canvas and apply the scratch effect box
     function resizeCanvas() {
       canvas.width = img.clientWidth;
       canvas.height = img.clientHeight;
       ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = '#f4c542'; // Happy color
+      ctx.fillStyle = '#f4c542';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Get mouse or touch coordinates
     function getCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -107,33 +109,28 @@
       };
     }
 
-    // Scratching logic
     function scratch(e) {
       if (!isDrawing) return;
       e.preventDefault();
       const { x, y } = getCoords(e);
 
-      // Apply the scratch effect
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
       ctx.arc(x, y, 30, 0, Math.PI * 2);
       ctx.fill();
 
-      // Count scratched pixels (transparent pixels)
       const imgData = ctx.getImageData(x - 30, y - 30, 60, 60);
       for (let i = 0; i < imgData.data.length; i += 4) {
         if (imgData.data[i + 3] === 0) scratchedPixels++;
       }
 
-      // If 90% of the canvas is scratched, trigger confetti and show the message (only once)
       if ((scratchedPixels / totalPixels) > 0.9 && !confettiShown) {
         confettiShown = true;
         triggerConfetti();
-        revealMessage.style.display = 'block'; // Show the message
+        revealMessage.style.display = 'block';
       }
     }
 
-    // Trigger confetti
     function triggerConfetti() {
       for (let i = 0; i < 50; i++) {
         const confetti = document.createElement('div');
@@ -141,25 +138,21 @@
         confetti.style.left = `${Math.random() * 100}%`;
         confetti.style.top = `${Math.random() * 100}%`;
         document.body.appendChild(confetti);
-
-        // Remove confetti after 5 seconds
         setTimeout(() => {
           confetti.remove();
         }, 5000);
       }
     }
 
-    // Mouse events
     canvas.addEventListener('mousedown', () => isDrawing = true);
     canvas.addEventListener('mouseup', () => isDrawing = false);
     canvas.addEventListener('mousemove', scratch);
 
-    // Touch events
     canvas.addEventListener('touchstart', () => isDrawing = true);
     canvas.addEventListener('touchend', () => isDrawing = false);
     canvas.addEventListener('touchmove', scratch, { passive: false });
 
-    // Ensure canvas matches image after load or resize
+    window.addEventListener('load', resizeCanvas);
     img.onload = resizeCanvas;
     window.addEventListener('resize', resizeCanvas);
   </script>
