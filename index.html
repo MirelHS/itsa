@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Surprise</title>
+  <title>Scratch-Off Surprise</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,13 +22,19 @@
       position: relative;
       width: 100%;
       max-width: 752px;
+      height: 400px;
       margin: 0 auto;
+      border: 2px dashed #ddd;
     }
 
-    #hidden-image {
-      width: 100%;
-      height: auto;
-      display: block;
+    #text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      color: #000;
+      z-index: 5;
     }
 
     #scratch-canvas {
@@ -41,102 +47,31 @@
       height: 100%;
       touch-action: none;
     }
-
-    p {
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-
-    .confetti {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background-color: #007bff;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0;
-      animation: confettiAnim 2s infinite;
-    }
-
-    @keyframes confettiAnim {
-      0% { transform: translate(0, 0); opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { transform: translate(50px, 200px); opacity: 0; }
-    }
-
-    /* Modal styles */
-    #popup-modal {
-      display: none;
-      position: fixed;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.7);
-    }
-
-    #popup-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    #close-popup {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    #close-popup:hover,
-    #close-popup:focus {
-      color: black;
-      text-decoration: none;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <p>Scratch the area below to reveal the surprise:</p>
 
   <div id="scratch-container">
-    <img id="hidden-image" src="https://raw.githubusercontent.com/MirelHS/bbsscratch/main/surprise.png" alt="Surprise" />
+    <div id="text">It's a boy!</div>
     <canvas id="scratch-canvas"></canvas>
-  </div>
-
-  <!-- Popup Modal -->
-  <div id="popup-modal">
-    <div id="popup-content">
-      <span id="close-popup">&times;</span>
-      <p>It's a boy!</p>
-    </div>
   </div>
 
   <script>
     const canvas = document.getElementById('scratch-canvas');
     const ctx = canvas.getContext('2d');
-    const img = document.getElementById('hidden-image');
-    const popupModal = document.getElementById('popup-modal');
-    const closePopup = document.getElementById('close-popup');
     let isDrawing = false;
-    let totalPixels = 0;
     let scratchedPixels = 0;
-    let confettiShown = false;
+    const width = 752; // Example width, adjust accordingly
+    const height = 400; // Example height, adjust accordingly
+    const threshold = width * height * 0.7; // 70% of total pixels
 
-    function resizeCanvas() {
-      canvas.width = img.clientWidth;
-      canvas.height = img.clientHeight;
+    function initScratchCanvas() {
+      canvas.width = width;
+      canvas.height = height;
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#f4c542';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      totalPixels = canvas.width * canvas.height * 0.7; // 70% of the total pixel count.
     }
 
     function getCoords(e) {
@@ -166,39 +101,10 @@
         if (imgData.data[i + 3] === 0) scratchedPixels++;
       }
 
-      if (scratchedPixels >= totalPixels && !confettiShown) {
-        confettiShown = true;
-        triggerConfetti();
-        showModal();
+      if (scratchedPixels >= threshold) {
+        canvas.style.opacity = 0; // Completely reveal the text
       }
     }
-
-    function triggerConfetti() {
-      for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.classList.add('confetti');
-        confetti.style.left = `${Math.random() * 100}%`;
-        confetti.style.top = `${Math.random() * 100}%`;
-        document.body.appendChild(confetti);
-        setTimeout(() => {
-          confetti.remove();
-        }, 5000);
-      }
-    }
-
-    function showModal() {
-      popupModal.style.display = 'block';
-    }
-
-    closePopup.addEventListener('click', () => {
-      popupModal.style.display = 'none';
-    });
-
-    window.addEventListener('click', (event) => {
-      if (event.target == popupModal) {
-        popupModal.style.display = 'none';
-      }
-    });
 
     canvas.addEventListener('mousedown', () => isDrawing = true);
     canvas.addEventListener('mouseup', () => isDrawing = false);
@@ -208,9 +114,7 @@
     canvas.addEventListener('touchend', () => isDrawing = false);
     canvas.addEventListener('touchmove', scratch, { passive: false });
 
-    window.addEventListener('load', resizeCanvas);
-    img.onload = resizeCanvas;
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', initScratchCanvas);
   </script>
 </body>
 </html>
